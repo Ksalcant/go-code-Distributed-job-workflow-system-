@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestSaveTableDriven(t *testing.T) {
 	tests := []struct {
@@ -35,14 +38,34 @@ func TestSaveTableDriven(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := NewJobRepository()
-			job, err := repo.Save(tt.job)
-			if err != nil && err.Error() != tt.wantErr {
-				t.Errorf("Save(nil job) = %s; want %s", err, tt.wantErr)
-			}
-			if job.ID != tt.wantID {
-				t.Errorf("Job ID = %d; wantID %d", job.ID, tt.wantID)
+			savedJob, err := repo.Save(tt.job)
+
+			if tt.wantErr != "" {
+				if err == nil {
+					t.Fatalf("expected error %q, got none", tt.wantErr)
+				}
+
+				if err.Error() != tt.wantErr {
+					t.Errorf("error = %q; want %q", err.Error(), tt.wantErr)
+				}
+				return
 			}
 
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			storedJob, storedJobErr := repo.Get(savedJob.ID)
+
+			if storedJobErr != nil {
+				t.Fatalf("expected stored job ID %d,  but got error %v", savedJob.ID, storedJobErr)
+			}
+
+			if !reflect.DeepEqual(storedJob, savedJob) {
+				t.Errorf("storedJobID= %d; savedJobID= %d", storedJob.ID, savedJob.ID)
+			}
+			if savedJob.ID != tt.wantID {
+				t.Errorf("Job ID = %d; want %d", savedJob.ID, tt.wantID)
+			}
 		})
 	}
 
