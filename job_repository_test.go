@@ -70,3 +70,55 @@ func TestSaveTableDriven(t *testing.T) {
 	}
 
 }
+
+func TestGetTableDriven(t *testing.T) {
+	repo := NewJobRepository()
+
+	storedJob, err := repo.Save(&Job{
+		Status:  "queued",
+		JobType: "Send Email",
+		Input: EmailInput{
+			Email:   "kaisel@uber.com",
+			Message: "Hola",
+		},
+	})
+	if err != nil {
+		t.Fatalf("setup save failed: %v", err)
+	}
+
+	tests := []struct {
+		name    string
+		jobID   int64
+		want    Job
+		wantErr string
+	}{
+		{"Job less than 0", -1, Job{}, "Job ID must be greater than 0"},
+		{"Job not found", 999, Job{}, "JobID not found"},
+		{"Return valid job", storedJob.ID, storedJob, ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := repo.Get(test.jobID)
+
+			if test.wantErr != "" {
+				if err == nil {
+					t.Fatalf("expected error %q, got none", test.wantErr)
+				}
+
+				if err.Error() != test.wantErr {
+					t.Fatalf("error = %q; want %q", err.Error(), test.wantErr)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(got, test.want) {
+				t.Fatalf("got = %#v; want = %#v", got, test.want)
+			}
+		})
+	}
+}

@@ -45,7 +45,15 @@ func (repo *jobRepository) Save(job *Job) (Job, error) {
 	repo.nextID++
 	return *job, nil
 }
-
+func (repo *jobRepository) Get(jobID int64) (Job, error) {
+	if jobID <= 0 {
+		return Job{}, errors.New("Job ID must be greater than 0")
+	}
+	if job, found := repo.jobs[jobID]; found {
+		return job, nil
+	}
+	return Job{}, errors.New("JobID not found")
+}
 func (repo *jobRepository) Update(job *Job) error {
 	if job == nil {
 		return errors.New("Job must not be nil")
@@ -61,15 +69,6 @@ func (repo *jobRepository) Update(job *Job) error {
 	}
 	repo.jobs[job.ID] = *job
 	return nil
-}
-func (repo *jobRepository) Get(jobID int64) (Job, error) {
-	if jobID <= 0 {
-		return Job{}, errors.New("Job ID must be positive")
-	}
-	if job, found := repo.jobs[jobID]; found {
-		return job, nil
-	}
-	return Job{}, errors.New("JobID not found")
 }
 
 func (repo *jobRepository) Delete(jobID int64) error {
