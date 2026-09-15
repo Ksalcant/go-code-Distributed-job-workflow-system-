@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 
-	model "job-system/model"
+	"job-system/model"
 )
 
 type JobRepository interface {

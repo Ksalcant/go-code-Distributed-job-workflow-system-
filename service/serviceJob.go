@@ -10,14 +10,10 @@ Is this state transition allowed?
 */
 import (
 	"errors"
+	"fmt"
 	"job-system/model"
 	"job-system/repository"
 )
-
-var jobTypes = map[string]struct{}{
-	"send_email":       {},
-	"classify_meeting": {},
-}
 
 type JobService struct {
 	repo repository.JobRepository
@@ -30,11 +26,6 @@ func NewJobService(repo repository.JobRepository) *JobService {
 	}
 }
 func (srv *JobService) CreateJob(jobType string, jobInput any) (model.Job, error) {
-
-	_, ok := jobTypes[jobType]
-	if !ok {
-		return model.Job{}, errors.New("unsupported job type")
-	}
 
 	if jobInput == nil {
 		return model.Job{}, errors.New("Job input must not be nil")
@@ -67,6 +58,16 @@ func (srv *JobService) CreateJob(jobType string, jobInput any) (model.Job, error
 	default:
 		return model.Job{}, errors.New("unsupported job type")
 	}
-	return model.Job{}, nil
+
+	job := &model.Job{
+		Status:  "queued",
+		JobType: jobType,
+		Input:   jobInput,
+	}
+	savedJob, err := srv.repo.Save(job)
+	if err != nil {
+		return model.Job{}, fmt.Errorf("create job: %w", err) // propagate
+	}
+	return savedJob, nil
 
 }
