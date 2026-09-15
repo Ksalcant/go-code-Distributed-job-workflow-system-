@@ -78,7 +78,7 @@ func TestCreateJob_WrongInputType(t *testing.T) {
 	}
 
 }
-func TestCreateJob_MissingTypeFields(t *testing.T) {
+func TestCreateJob_MissingEmail(t *testing.T) {
 	repo := repository.NewJobRepository()
 	service := NewJobService(repo)
 
