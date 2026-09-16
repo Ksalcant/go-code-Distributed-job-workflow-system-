@@ -19,7 +19,7 @@ type JobService struct {
 	repo repository.JobRepository
 }
 
-func NewJobService(repo repository.JobRepository) *JobService {
+func NewJobService(repo *repository.JobRepository) *JobService {
 
 	return &JobService{
 		repo: repo,
