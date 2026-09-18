@@ -5,6 +5,7 @@ import (
 	"job-system/model"
 	"job-system/service"
 	"net/http"
+	"strconv"
 )
 
 type CreateJobRequest struct {
@@ -77,4 +78,27 @@ func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func (h *JobHandler) GetJob(w http.ResponseWriter, r *http.Request) {
+	jobIdString := r.PathValue("id")
+	jobID, err := strconv.ParseInt(jobIdString, 10, 64)
+	if err != nil || jobID <= 0 {
+		http.Error(w, "Invalid job ID", http.StatusBadRequest)
+		return
+	}
+	job, err := h.service.GetJob(jobID)
+	if err != nil {
+		http.Error(w, "Job not found", http.StatusNotFound)
+		return
+	}
+	rawJob, err := json.Marshal(job)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rawJob)
+	return
 }

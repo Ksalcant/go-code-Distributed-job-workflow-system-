@@ -27,7 +27,8 @@ func main() {
 	srv := service.NewJobService(repo)
 	jobHandler := handler.NewJobHandler(srv)
 
-	http.DefaultServeMux.HandleFunc("/jobs", jobHandler.CreateJob)
+	http.DefaultServeMux.HandleFunc("POST /jobs", jobHandler.CreateJob)
+	http.DefaultServeMux.HandleFunc("GET /jobs/{id}", jobHandler.GetJob)
 	fmt.Printf("Listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

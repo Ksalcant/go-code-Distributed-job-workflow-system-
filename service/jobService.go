@@ -71,3 +71,14 @@ func (srv *JobService) CreateJob(jobType string, jobInput any) (model.Job, error
 	return savedJob, nil
 
 }
+
+func (srv *JobService) GetJob(jobID int64) (model.Job, error) {
+	if jobID <= 0 {
+		return model.Job{}, fmt.Errorf("Job ID must be greater than 0")
+	}
+	job, err := srv.repo.Get(jobID)
+	if err != nil {
+		return model.Job{}, fmt.Errorf("get job: %w", err)
+	}
+	return job, nil
+}
