@@ -82,3 +82,14 @@ func (srv *JobService) GetJob(jobID int64) (model.Job, error) {
 	}
 	return job, nil
 }
+
+func (srv *JobService) Delete(jobID int64) error {
+	if jobID <= 0 {
+		return fmt.Errorf("Job ID does not exists")
+	}
+	err := srv.repo.Delete(jobID)
+	if err != nil {
+		return fmt.Errorf("delete job: %w", err)
+	}
+	return nil
+}

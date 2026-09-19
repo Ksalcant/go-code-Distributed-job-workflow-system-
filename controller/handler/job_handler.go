@@ -100,5 +100,20 @@ func (h *JobHandler) GetJob(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(rawJob)
-	return
+}
+
+func (h *JobHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	jobIdString := r.PathValue("id")
+	jobID, err := strconv.ParseInt(jobIdString, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid job ID", http.StatusBadRequest)
+		return
+	}
+	err = h.service.Delete(jobID)
+	if err != nil {
+		http.Error(w, "service error", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 }

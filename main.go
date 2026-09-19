@@ -29,6 +29,7 @@ func main() {
 
 	http.DefaultServeMux.HandleFunc("POST /jobs", jobHandler.CreateJob)
 	http.DefaultServeMux.HandleFunc("GET /jobs/{id}", jobHandler.GetJob)
+	http.DefaultServeMux.HandleFunc("DELETE /jobs/{id}", jobHandler.Delete)
 	fmt.Printf("Listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
