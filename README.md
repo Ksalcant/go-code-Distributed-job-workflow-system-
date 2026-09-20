@@ -1,6 +1,15 @@
 # Distributed Job / Workflow System
 
-A Go learning project that accepts jobs over HTTP and stores them in memory. The current version creates and retrieves `send_email` and `classify_meeting` jobs. Jobs start as `queued`; workers, email delivery, and meeting classification are future work.
+Two separate implementations in one repository, sharing the local `learningLog.md`:
+
+| Track | Location | Port | Run |
+| --- | --- | --- | --- |
+| Go | Repository root (existing layout) | 8080 | `go run .` |
+| Java / Spring Boot | [`java-springboot/`](java-springboot/README.md) | 8081 | `cd java-springboot && ./mvnw spring-boot:run` |
+
+Both stop at the current Go checkpoint (`71a9a88`): create, retrieve, and delete in-memory jobs. Each process has its own data and ID counter. The sections below document the **Go track**.
+
+A Go learning project that accepts jobs over HTTP and stores them in memory. The current version creates, retrieves, and deletes `send_email` and `classify_meeting` jobs. Jobs start as `queued`; workers, email delivery, and meeting classification are future work.
 
 ## Current architecture
 
@@ -26,7 +35,7 @@ flowchart LR
 
 For creation, the handler decodes `input` as `json.RawMessage`, selects its concrete payload type using `job_type`, and passes that value to the service. The service validates it and creates a queued job; the repository assigns an ID starting at 1.
 
-For retrieval, the handler parses `{id}` into a positive `int64`; the service calls the repository's map lookup. Repository `Update` and `Delete` methods exist, but neither has an HTTP endpoint yet.
+For retrieval, the handler parses `{id}` into a positive `int64`; the service calls the repository's map lookup. Deletion also runs through handler → service → repository and returns `204 No Content`. The repository `Update` method exists without an HTTP endpoint.
 
 ## Run locally
 
@@ -48,6 +57,7 @@ The address is currently hardcoded as `:8080` in `main.go`, which listens on ava
 | --- | --- | --- |
 | `POST /jobs` | Validate and store a job. | `201 Created` with the saved job. |
 | `GET /jobs/{id}` | Retrieve a job by positive integer ID. | `200 OK` with the stored job. |
+| `DELETE /jobs/{id}` | Delete an existing job. | `204 No Content` with no body. |
 
 Create an email job:
 
@@ -88,6 +98,8 @@ Success bodies are JSON. Error bodies are plain text:
 | `GET /jobs/999` when that ID is absent | `404 Not Found`: `Job not found` |
 | `GET /jobs` or `PUT /jobs/1` | `405 Method Not Allowed` |
 | Failure to marshal a response | `500 Internal Server Error` |
+
+DELETE returns `400` for malformed, nonpositive, overflowing, or missing IDs (including deleting twice). For example: `curl -i -X DELETE http://localhost:8080/jobs/1`.
 
 There is no job-list endpoint. Creation service errors currently become `400`; retrieval service errors become `404`, including any underlying repository errors. More precise error classification remains future work.
 
@@ -148,6 +160,6 @@ Useful places to follow a request are `JobHandler.CreateJob` → `JobService.Cre
 
 ## Remaining work
 
-Add synchronization for concurrent requests, a DELETE endpoint, and focused retrieval/handler tests. Later milestones add a bounded worker pool, priority scheduling, retries, workflow dependencies, recovery, rate limiting, durable storage, and observability. The current server also has no configured timeouts or graceful shutdown.
+Add synchronization for concurrent requests and focused retrieval/deletion/handler tests. Later milestones add a bounded worker pool, priority scheduling, retries, workflow dependencies, recovery, rate limiting, durable storage, and observability. The current server also has no configured timeouts or graceful shutdown.
 
 Verified on September 18, 2026 with Go 1.27.1: an uncached test run passed; sequential HTTP checks covered email/meeting creation and retrieval plus malformed requests, invalid/missing IDs, and unsupported methods. A Delve session reached the service `GetJob` breakpoint and inspected the requested ID and call stack.
