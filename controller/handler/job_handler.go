@@ -111,7 +111,7 @@ func (h *JobHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.service.Delete(jobID)
 	if err != nil {
-		http.Error(w, "service error", http.StatusBadRequest)
+		http.Error(w, "Job ID does not exists", http.StatusNotFound)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

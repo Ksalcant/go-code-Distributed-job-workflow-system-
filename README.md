@@ -1,14 +1,5 @@
 # Distributed Job / Workflow System
 
-Two separate implementations in one repository, sharing the local `learningLog.md`:
-
-| Track | Location | Port | Run |
-| --- | --- | --- | --- |
-| Go | Repository root (existing layout) | 8080 | `go run .` |
-| Java / Spring Boot | [`java-springboot/`](java-springboot/README.md) | 8081 | `cd java-springboot && ./mvnw spring-boot:run` |
-
-Both stop at the current Go checkpoint (`71a9a88`): create, retrieve, and delete in-memory jobs. Each process has its own data and ID counter. The sections below document the **Go track**.
-
 A Go learning project that accepts jobs over HTTP and stores them in memory. The current version creates, retrieves, and deletes `send_email` and `classify_meeting` jobs. Jobs start as `queued`; workers, email delivery, and meeting classification are future work.
 
 ## Current architecture
